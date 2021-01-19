@@ -10,6 +10,7 @@ import example.utils.FileUtil
 import example.utils.ConnectionUtil
 import scala.util.Using
 import scala.collection.mutable.ArrayBuffer
+import java.sql.ResultSet
 /** A CLI that allows the user to interact with our application
   *
   * This Cli is a class because in the future we might provide customization options
@@ -130,8 +131,8 @@ class Cli {
         }
         
   def parseJSON(): Unit = {
-     var rs = FileUtil.getTextContent("fighters.json")
-     FighterDao.saveNew(rs) 
+     var results = FileUtil.getTextContent("fighters.json")
+     FighterDao.saveNew(results) 
   }
 
 } 
