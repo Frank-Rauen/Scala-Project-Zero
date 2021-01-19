@@ -1,9 +1,15 @@
-package example
+package example.cli
 
 import scala.io.StdIn
 import scala.util.matching.Regex
 import java.io.FileNotFoundException
 
+import example.daos.FighterDao
+import example.models.Fighter
+import example.utils.FileUtil
+import example.utils.ConnectionUtil
+import scala.util.Using
+import scala.collection.mutable.ArrayBuffer
 /** A CLI that allows the user to interact with our application
   *
   * This Cli is a class because in the future we might provide customization options
@@ -23,28 +29,28 @@ class Cli {
     * code for your project if you like.
     */
   val commandArgPattern: Regex = "(\\w+)\\s*(.*)".r
-
   /** Prints a greeting to the user
     */
   def printWelcome(): Unit = {
-    println("Welcome to Word Count CLI!")
+    println("Welcome to Project Zero!")
   }
 
   /** Prints the commands available to the user
     */
   def printOptions(): Unit = {
     println("Commands available:")
-    println(
-      "wordcount [filename] : prints a count of the frequency of each word in a file"
-    )
-    println("exit : exits Word Count CLI")
-    println("Bonus Commands:")
-    println("echo [string to repeat] : repeats a string back to the user")
-    println("addFive [number] : returns the given number, plus 5")
-    println(
-      "printTextContent [filename] : prints the text contained in a given file"
-    )
+    // println(
+    //   "Get one fighter by first and last name with the getOne command"
+    // )
+    println("Get all fighters on the database with the getAll command")
+    println("Add one fighter with the insert command")
+    println("Update a fighters name with the update command")
+    println("Delete a fighter with the delete command")
+    println("Parse through a json document with the json command")
+    println("exit : exits project zero CLI")
   }
+    
+    
 
   /** This runs the menu, this is the entrypoint to the Cli class.
     *
@@ -63,98 +69,60 @@ class Cli {
       // Here's an example using our regex above, feel free to just follow along with similar commands and args
       input match {
         case commandArgPattern(cmd, arg)
-          if cmd.equalsIgnoreCase("wordcount") => {
-          wordcount(arg)
-        }
-        case commandArgPattern(cmd, arg) 
-          if cmd.equalsIgnoreCase("echo") => {
-          println(arg)
+          if cmd.equalsIgnoreCase("getAll") => {
+          getAllFighters()
         }
         case commandArgPattern(cmd, arg) 
           if cmd.equalsIgnoreCase("exit") => {
           continueMenuLoop = false
         }
         case commandArgPattern(cmd, arg) 
-          if cmd.equalsIgnoreCase("addfive") => {
-          addFive(arg)
+          if cmd.equalsIgnoreCase("insert") => {
+          insertFighter(arg)
         }
         case commandArgPattern(cmd, arg)
-          if cmd.equalsIgnoreCase("printtextcontent") => {
-          printTextContent(arg)
+          if cmd.equalsIgnoreCase("update") => {
+          updateFighter()
         }
-        case commandArgPattern(cmd, arg) => {
-          println(s"""Failed to parse command: "$cmd" with arguments: "$arg"""")
+        case commandArgPattern(cmd, arg)
+          if cmd.equalsIgnoreCase("delete") => {
+          deleteFighter()  
         }
         case _ => {
           println("Failed to parse any input")
         }
       }
     }
-    println("Thank you for using Word Count CLI, goodbye!")
+    println("Thank you for using Project zero CL, goodbye!")
   }
 
-  def addFive(arg: String) = {
-    try {
-      println(s"result: ${arg.toDouble + 5.0}")
-    } catch {
-      case nfe: NumberFormatException => {
-        println(s"""Failed to parse "$arg" as a double""")
-      }
-    }
+  def getAllFighters(): Unit = {
+    FighterDao.getAll()
   }
 
-  def printTextContent(arg: String) = {
-    try {
-      println(FileUtil.getTextContent(arg))
-    } catch {
-      case fnfe: FileNotFoundException => {
-        println(s"Failed to find file: ${fnfe.getMessage}")
-        println(s"""Found top level files: ${FileUtil.getTopLevelFiles.mkString(", ")}""")
-      }
-    }
+  // def getOne(name: String): Unit = {
+  //   FighterDao.get(name)
+  // }
+
+  def insertFighter(name: String): Unit = {
+    // var fighter = Fighter
+    FighterDao.saveNew(name)
   }
 
-  def wordcount(arg: String) = {
-    try {
-      val text = FileUtil.getTextContent(arg)
-      //we're going to have a chain of methods on text that specifies how we
-      // want to transform it to arrive at a count of the frequency of each word:
-      // replaceAll will find instances of the first String and replace them with the second
-      // We're going to use a pinch of regex to replace all punctuation with nothing
-      // make all characters lowercase
-      // split the String into an Array[String] on space characters
-
-      // TODO: handle contractions better than just ignoring them
-      text
-        .replaceAll("\\p{Punct}", "")
-        .toLowerCase()
-        .split("\\s+")
-        .groupMapReduce(word => word)(word => 1)(_ + _)
-        .toSeq
-        .sortBy({ case (word, count) => count })
-        .foreach({ case (word, count) => println(s"$word, $count") })
-
-      //groupMapReduce! it's OK to not get this yet
-      // the first function is used to create groups from our array of Strings
-      // in general, elements with the same output from this function are grouped together
-      // word => word means that the words are grouped together based on their identity
-      // we end up with all the "the" words groups, all the "only" words groups, ...
-      //
-      // the second function is used to map (transform) the words.  Here we transform each word
-      // into its count, which is easy.  Every word counts for 1.  Since there are 5 instances
-      // of "only", each of those instances of "only" in the "only" group is transformed into a 1
-      //
-      // the third function is a reducer.  It specifies how we combine all the transformed outputs
-      // from the second function in each group.  This reducer just sums them.  So the five 1 values
-      // we have in the "only" group are all summed and reduced to "5"
-
-    } catch {
-      case fnfe: FileNotFoundException => {
-        println(s"Failed to find file: ${fnfe.getMessage}")
-        println(s"""Found top level files:
-              ${FileUtil.getTopLevelFiles.mkString(", ")}""")
-      }
-    }
+  def updateFighter(): Unit = {
+    println("Updating name to?")
+    var newName = StdIn.readLine()
+    println("Updating name from?")
+    var name = StdIn.readLine()
+    FighterDao.updateNew(newName, name)
   }
 
-}
+  def deleteFighter(): Unit = {
+    println("delete fighter")
+          println("name?")
+          var name = StdIn
+            .readLine()
+          FighterDao.deleteFighter(name)
+        }
+  } 
+
