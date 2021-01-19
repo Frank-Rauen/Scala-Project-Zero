@@ -88,6 +88,10 @@ class Cli {
           if cmd.equalsIgnoreCase("delete") => {
           deleteFighter()  
         }
+        case commandArgPattern(cmd, arg)
+          if cmd.equalsIgnoreCase("json") => {
+            parseJSON()
+          }
         case _ => {
           println("Failed to parse any input")
         }
@@ -124,5 +128,11 @@ class Cli {
             .readLine()
           FighterDao.deleteFighter(name)
         }
-  } 
+        
+  def parseJSON(): Unit = {
+     var rs = FileUtil.getTextContent("fighters.json")
+     FighterDao.saveNew(rs) 
+  }
+
+} 
 
