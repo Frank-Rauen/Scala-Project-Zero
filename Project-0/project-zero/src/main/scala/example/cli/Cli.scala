@@ -110,7 +110,8 @@ class Cli {
   // }
 
   def insertFighter(name: String): Unit = {
-    // var fighter = Fighter
+    println("New Fighter Name?")
+    var name = StdIn.readLine()
     FighterDao.saveNew(name)
   }
 
