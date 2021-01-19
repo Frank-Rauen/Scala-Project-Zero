@@ -133,7 +133,7 @@ class Cli {
   def parseJSON(): Unit = {
      var results = FileUtil.getTextContent("fighters.json")
      FighterDao.saveNew(results) 
-  }
+  } 
 
 } 
 
