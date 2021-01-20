@@ -126,8 +126,7 @@ class Cli {
   def deleteFighter(): Unit = {
     println("delete fighter")
           println("name?")
-          var name = StdIn
-            .readLine()
+          var name = StdIn.readLine()
           FighterDao.deleteFighter(name)
         }
         
